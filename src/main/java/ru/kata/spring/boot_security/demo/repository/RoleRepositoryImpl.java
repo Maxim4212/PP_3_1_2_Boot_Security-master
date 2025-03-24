@@ -5,7 +5,9 @@ import ru.kata.spring.boot_security.demo.model.Role;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class RoleRepositoryImpl implements RoleRepository {
@@ -27,5 +29,26 @@ public class RoleRepositoryImpl implements RoleRepository {
     @Override
     public void addRole(Role role) {
         entityManager.persist(role);
+    }
+
+    @Override
+    public List<Role> findByIds(List<Long> roleIds) {
+        return entityManager.createQuery("SELECT r FROM Role r WHERE r.id IN :roleIds", Role.class)
+                .setParameter("roleIds", roleIds)
+                .getResultList();
+    }
+
+    @Override
+    public Optional<Role> findByName(String name) {
+        String jpql = "SELECT r FROM Role r WHERE r.user_role = :name";
+        TypedQuery<Role> query = entityManager.createQuery(jpql, Role.class);
+        query.setParameter("name", name);
+
+        try {
+            Role role = query.getSingleResult();
+            return Optional.of(role);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

@@ -1,16 +1,80 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Админка</title>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
 </head>
 <body>
-<h1>Добро пожаловать, Администратор!</h1>
-<p>Вы имеете доступ к CRUD-операциям.</p>
-<form th:action="@{/logout}" method="post">
-    <input type="submit" value="Выйти"/>
+<div style="margin-top: 20px; margin-left: 20px;">
+    <h1>Добро пожаловать, Администратор!</h1>
+    <p>Вы имеете доступ к CRUD-операциям.</p>
+</div>
+<div style="margin-left: 20px;">
+    <table border="1">
+        <tr>
+            <!--        <th>ID</th>-->
+            <th>Имя пользователя</th>
+            <th>Роли</th>
+            <th>Действия</th>
+        </tr>
+        <tr th:each="user : ${users}">
+            <!--        <td th:text="${user.id}"></td>-->
+            <td th:text="${user.username}"></td>
+            <td>
+                <ul>
+                    <li th:each="role : ${user.roles}" th:text="${role.name}"></li>
+                </ul>
+            </td>
+            <td>
+                <a th:href="@{'/admin/edit/' + ${user.id}}">Редактировать</a>
+                <form th:action="@{'/admin/delete/' + ${user.id}}" method="post" style="display: inline;">
+                    <button type="submit" onclick="return confirm('Удалить пользователя?')">Удалить</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>
+<form th:action="@{/admin/save}" method="post">
+
+    <input type="hidden" name="id" th:value="${selectedUser != null ? selectedUser.id : ''}"/>
+
+    <div style="margin-top: 20px; margin-left: 20px;">
+        <label for="username">Имя пользователя:</label>
+        <input type="text" id="username" name="username"
+               th:value="${selectedUser != null ? selectedUser.username : ''}" required/>
+    </div>
+
+    <div style="margin-left: 20px;">
+        <label for="password">Пароль:</label>
+        <input type="password" id="password" name="password"
+               th:value="${selectedUser != null ? selectedUser.password : ''}" required/>
+    </div>
+
+    <div style="margin-top: 20px; margin-left: 20px;">
+        <div>
+            <span>Роли:</span>
+            <label th:if="${roles != null and not #lists.isEmpty(roles) and roles.size() > 0}">
+                <input type="radio" name="roleIds" th:value="${roles[0].id}"
+                       th:checked="${selectedUser != null and selectedUser.roles != null and #lists.contains(selectedUser.roles, roles[0])}"
+                       required/>
+                Admin
+            </label>
+            <label th:if="${roles != null and not #lists.isEmpty(roles) and roles.size() > 1}">
+                <input type="radio" name="roleIds" th:value="${roles[1].id}"
+                       th:checked="${selectedUser != null and selectedUser.roles != null and #lists.contains(selectedUser.roles, roles[1])}"
+                       required/>
+                User
+            </label>
+        </div>
+    </div>
+    <div style="margin-top: 20px; margin-left: 20px;">
+        <button type="submit">Сохранить</button>
+    </div>
 </form>
-<a th:href="@{/user}">
-    <button>Go to User Page</button>
-</a>
+<div style="margin-top: 20px; margin-left: 20px;">
+    <form th:action="@{/logout}" method="post">
+        <input type="submit" value="Выйти"/>
+    </form>
+</div>
 </body>
 </html>

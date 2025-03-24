@@ -5,10 +5,9 @@ import ru.kata.spring.boot_security.demo.model.User;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.transaction.Transactional;
+import java.util.List;
 
 @Repository
-@Transactional
 public class UserRepositoryImpl implements UserRepository {
 
     @PersistenceContext
@@ -16,13 +15,36 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public User getUserByLogin(String login) {
-        User user = entityManager.createQuery("select u from User u where u.username =: username", User.class)
+        return entityManager.createQuery("select u from User u where u.username =: username", User.class)
                 .setParameter("username", login).getSingleResult();
-        return user;
     }
 
     @Override
     public void saveUser(User user) {
-        entityManager.merge(user);
+        if (user.getId() == null) {
+            entityManager.persist(user);
+        } else {
+            entityManager.merge(user);
+        }
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        return entityManager.createQuery("select u from User u", User.class).getResultList();
+    }
+
+    @Override
+    public void deleteUserById(Long id) {
+        User user = entityManager.find(User.class, id);
+        if (user != null) {
+            entityManager.remove(user);
+        } else {
+            throw new IllegalArgumentException("Пользователь с ID " + id + " не найден");
+        }
+    }
+
+    @Override
+    public User findById(Long id) {
+        return entityManager.find(User.class, id);
     }
 }
